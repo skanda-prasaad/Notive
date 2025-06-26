@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
-mongoose.connect('mongodb+srv://skandaprasad595:skanda31@cluster0.dvemxcf.mongodb.net/Second-Brain').then(() => console.log("Connected to mongodb")).catch((err) => console.log("Connection error"))
+import dotenv from "dotenv";
+dotenv.config();
+mongoose
+  .connect(process.env.MONGO_URL as string)
+  .then(() => console.log("Connected to mongodb"))
+  .catch((err) => console.log("Connection error"));
 const userSchema = new Schema({
   email: {
     type: String,

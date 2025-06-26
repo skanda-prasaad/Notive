@@ -3,10 +3,11 @@ import dotenv from "dotenv";
 import { z } from "zod";
 import cors from "cors";
 import bcrypt from "bcryptjs";
-import { ContentModel, UserModel } from "./db";
+import { ContentModel, LinksModel, UserModel } from "./db";
 import jwt from "jsonwebtoken";
 import { useMiddleware } from "./middleware";
 import mongoose, { Mongoose } from "mongoose";
+import { random } from "./utils";
 dotenv.config();
 const JWT_KEY = process.env.JWT_SECRET_KEY;
 const app = express();
@@ -134,7 +135,7 @@ app.post(
   }
 );
 
-app.get("/api/v1/content", async (req: CustomRequest, res: Response) => {
+app.get("/api/v1/content",useMiddleware, async (req: CustomRequest, res: Response) => {
   const userId = req.userId;
   try {
     const content = await ContentModel.find({
@@ -168,7 +169,7 @@ app.delete(
         });
         return;
       }
-      const deleted = await ContentModel.findByIdAndDelete({
+      const deleted = await ContentModel.findOneAndDelete({
         _id: new mongoose.Types.ObjectId(contentId),
         userId: userId,
       });
@@ -190,14 +191,143 @@ app.delete(
   }
 );
 
-app.post("/api/v1/brain/share", (req: Request, res: Response) => {
-  
+app.post(
+  "/api/v1/brain/share",
+  useMiddleware,
+  async (req: CustomRequest, res: Response) => {
+    try {
+      const { share } = req.body;
+      if (share) {
+        const existingLink = await LinksModel.findOne({
+          userId: req.userId,
+        });
+        if (existingLink) {
+          res.json({
+            hash: existingLink.hash,
+          });
+          return;
+        }
+        const hash = random(18);
+        await LinksModel.create({
+          userId: req.userId,
+          hash: hash,
+        });
+        res.json({
+          hash,
+        });
+      } else {
+        const result = await LinksModel.deleteOne({
+          userId: req.userId,
+        });
+        if (result.deletedCount === 0) {
+          res.status(404).json({
+            messgae: "No link to remove",
+          });
+          return;
+        }
+        res.json({
+          message: "Removed link",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({
+        message: "Server error",
+      });
+    }
+  }
+);
+
+app.get("/api/v1/brain/~:shareLink",useMiddleware, async (req: Request, res: Response) => {
+  try {
+    const hash = req.params.shareLink;
+    const shareLink = await LinksModel.findOne({ hash });
+
+    if (!shareLink) {
+      res.status(404).json({
+        message: "Share link not found",
+      });
+      return;
+    }
+    const content = await ContentModel.find({
+      userId: shareLink.userId,
+    }).sort({ createdAt: -1 });
+
+    const user = await UserModel.findById(shareLink.userId);
+    if (!user) {
+      res.status(404).json({
+        message: "User not found",
+      });
+      return;
+    }
+    res.json({
+      username: user.name || user.email,
+      content,
+    });
+  } catch (error) {
+    console.error("Share content error:", error);
+    res.status(500).json({
+      message: "Server error",
+      error: "Unknown error",
+    });
+  }
+});
+app.put("/api/v1/content/:id",useMiddleware, async (req: CustomRequest, res: Response) => {
+  try {
+    const contentId = req.params.id;
+    const { content } = req.body;
+    const userId = req.userId;
+
+    if (!contentId || !content) {
+      res.status(400).json({
+        message: "Content ID and updated content are required",
+      });
+      return;
+    }
+    const updatedContent = await ContentModel.findOneAndUpdate(
+      {
+        _id: contentId,
+        userId: userId,
+      },
+      {
+        $set: { content },
+      },
+      {
+        new: true,
+      }
+    );
+    if (!updatedContent) {
+      res.status(404).json({
+        message: "Content not found or you don't have permission to update it",
+      });
+      return;
+    }
+    res.status(200).json({
+      message: "Content updated successfully",
+      content: updatedContent,
+    });
+  } catch (err) {
+    console.error("Error updating content:", err);
+    res.status(500).json({
+      message: "Failed to update content",
+    });
+  }
 });
 
-app.get("/api/v1/brain/:shareLink", (req: Request, res: Response) => {
-  res.send(`Get shared content by link ${req.params.shareLink}`);
-});
+const main = async () => {
+  try {
+    const start = Date.now();
+    await mongoose.connect(process.env.MONGO_URL as string);
+    const timeTaken = ((Date.now() - start) / 1000).toFixed(2);
+    console.log(`✅ MongoDB connected in ${timeTaken}s`);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Failed to connect to MongoDB:", err);
+    process.exit(1); // Crash early if DB connection fails
+  }
+};
+
+main();
