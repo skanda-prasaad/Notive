@@ -3,9 +3,12 @@ import dotenv from "dotenv";
 import { z } from "zod";
 import cors from "cors";
 import bcrypt from "bcryptjs";
-import { UserModel } from "./db";
+import { ContentModel, UserModel } from "./db";
+import jwt from "jsonwebtoken";
+import { useMiddleware } from "./middleware";
+import mongoose, { Mongoose } from "mongoose";
 dotenv.config();
-
+const JWT_KEY = process.env.JWT_SECRET_KEY;
 const app = express();
 const PORT = process.env.PORT || 2000;
 
@@ -55,24 +58,140 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-app.post("/api/v1/signin", (req: Request, res: Response) => {
-  res.send("Signin route hit");
+
+app.post("/api/v1/signin", async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  try {
+    const response = await UserModel.findOne({
+      email: email,
+    });
+    if (!response) {
+      res.status(404).json({
+        message: "User not found",
+      });
+      return;
+    }
+    const matchpwd = await bcrypt.compare(
+      password,
+      response.password as string
+    );
+    if (!matchpwd) {
+      res.status(401).json({ message: "Invalid credentials" });
+      return;
+    }
+    const token = jwt.sign(
+      {
+        id: response._id,
+      },
+      JWT_KEY as string
+    );
+
+    res.status(200).json({
+      message: "Signed in successfully",
+      token,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
 });
 
-app.post("/api/v1/content", (req: Request, res: Response) => {
-  res.send("Add content route hit");
+interface ContentRequestBody {
+  link: string;
+  type: string;
+  title: string;
+  content?: string;
+}
+
+interface CustomRequest<T = any> extends Request {
+  userId?: string;
+  body: T;
+}
+
+app.post(
+  "/api/v1/content",
+  useMiddleware,
+  async (req: CustomRequest<ContentRequestBody>, res: Response) => {
+    try {
+      const { link, type, title, content } = req.body;
+      const newContent = await ContentModel.create({
+        link,
+        type,
+        title,
+        content,
+        userId: req.userId,
+      });
+      res.status(200).json({
+        message: "Content created",
+        content: newContent,
+      });
+    } catch (err) {
+      console.error("Error:", err);
+      res.status(500).json({ message: "Failed to add content" });
+    }
+  }
+);
+
+app.get("/api/v1/content", async (req: CustomRequest, res: Response) => {
+  const userId = req.userId;
+  try {
+    const content = await ContentModel.find({
+      userId: userId,
+    }).populate("userId", "username");
+    if (!content) {
+      res.status(404).json({ message: "No content found" });
+      return;
+    }
+    res.status(200).json({
+      message: "Succesfull",
+      content: content,
+    });
+  } catch (err) {
+    console.error("Fetch error:", err);
+    res.status(500).json({ message: "Something went wrong" });
+  }
 });
 
-app.get("/api/v1/content", (req: Request, res: Response) => {
-  res.send("Get content route hit");
-});
+app.delete(
+  "/api/v1/content/:id",
+  useMiddleware,
+  async (req: CustomRequest, res: Response) => {
+    try {
+      const contentId = req.params.id;
+      const userId = req.userId;
 
-app.delete("/api/v1/content/:id", (req: Request, res: Response) => {
-  res.send(`Delete content with ID ${req.params.id}`);
-});
+      if (!mongoose.Types.ObjectId.isValid(contentId)) {
+        res.status(400).json({
+          messgae: "Content id is invalid",
+        });
+        return;
+      }
+      const deleted = await ContentModel.findByIdAndDelete({
+        _id: new mongoose.Types.ObjectId(contentId),
+        userId: userId,
+      });
+      if (!deleted) {
+        res.status(400).json({
+          message: "content not found",
+        });
+        return;
+      }
+      res.status(200).json({
+        message: "Content deleted successfully",
+        success: true,
+        deletedId: contentId,
+      });
+    } catch (error) {
+      console.error("Error deleting content:", error);
+      res.status(500).json({ message: "Failed to delete content" });
+    }
+  }
+);
 
 app.post("/api/v1/brain/share", (req: Request, res: Response) => {
-  res.send("Create/remove share link");
+  
 });
 
 app.get("/api/v1/brain/:shareLink", (req: Request, res: Response) => {
