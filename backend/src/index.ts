@@ -135,25 +135,29 @@ app.post(
   }
 );
 
-app.get("/api/v1/content",useMiddleware, async (req: CustomRequest, res: Response) => {
-  const userId = req.userId;
-  try {
-    const content = await ContentModel.find({
-      userId: userId,
-    }).populate("userId", "username");
-    if (!content) {
-      res.status(404).json({ message: "No content found" });
-      return;
+app.get(
+  "/api/v1/content",
+  useMiddleware,
+  async (req: CustomRequest, res: Response) => {
+    const userId = req.userId;
+    try {
+      const content = await ContentModel.find({
+        userId: userId,
+      }).populate("userId", "username");
+      if (!content) {
+        res.status(404).json({ message: "No content found" });
+        return;
+      }
+      res.status(200).json({
+        message: "Succesfull",
+        content: content,
+      });
+    } catch (err) {
+      console.error("Fetch error:", err);
+      res.status(500).json({ message: "Something went wrong" });
     }
-    res.status(200).json({
-      message: "Succesfull",
-      content: content,
-    });
-  } catch (err) {
-    console.error("Fetch error:", err);
-    res.status(500).json({ message: "Something went wrong" });
   }
-});
+);
 
 app.delete(
   "/api/v1/content/:id",
@@ -238,81 +242,90 @@ app.post(
   }
 );
 
-app.get("/api/v1/brain/~:shareLink",useMiddleware, async (req: Request, res: Response) => {
-  try {
-    const hash = req.params.shareLink;
-    const shareLink = await LinksModel.findOne({ hash });
+app.get(
+  "/api/v1/brain/~:shareLink",
+  useMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const hash = req.params.shareLink;
+      const shareLink = await LinksModel.findOne({ hash });
 
-    if (!shareLink) {
-      res.status(404).json({
-        message: "Share link not found",
-      });
-      return;
-    }
-    const content = await ContentModel.find({
-      userId: shareLink.userId,
-    }).sort({ createdAt: -1 });
-
-    const user = await UserModel.findById(shareLink.userId);
-    if (!user) {
-      res.status(404).json({
-        message: "User not found",
-      });
-      return;
-    }
-    res.json({
-      username: user.name || user.email,
-      content,
-    });
-  } catch (error) {
-    console.error("Share content error:", error);
-    res.status(500).json({
-      message: "Server error",
-      error: "Unknown error",
-    });
-  }
-});
-app.put("/api/v1/content/:id",useMiddleware, async (req: CustomRequest, res: Response) => {
-  try {
-    const contentId = req.params.id;
-    const { content } = req.body;
-    const userId = req.userId;
-
-    if (!contentId || !content) {
-      res.status(400).json({
-        message: "Content ID and updated content are required",
-      });
-      return;
-    }
-    const updatedContent = await ContentModel.findOneAndUpdate(
-      {
-        _id: contentId,
-        userId: userId,
-      },
-      {
-        $set: { content },
-      },
-      {
-        new: true,
+      if (!shareLink) {
+        res.status(404).json({
+          message: "Share link not found",
+        });
+        return;
       }
-    );
-    if (!updatedContent) {
-      res.status(404).json({
-        message: "Content not found or you don't have permission to update it",
+      const content = await ContentModel.find({
+        userId: shareLink.userId,
+      }).sort({ createdAt: -1 });
+
+      const user = await UserModel.findById(shareLink.userId);
+      if (!user) {
+        res.status(404).json({
+          message: "User not found",
+        });
+        return;
+      }
+      res.json({
+        username: user.name || user.email,
+        content,
       });
-      return;
+    } catch (error) {
+      console.error("Share content error:", error);
+      res.status(500).json({
+        message: "Server error",
+        error: "Unknown error",
+      });
     }
-    res.status(200).json({
-      message: "Content updated successfully",
-      content: updatedContent,
-    });
-  } catch (err) {
-    console.error("Error updating content:", err);
-    res.status(500).json({
-      message: "Failed to update content",
-    });
   }
-});
+);
+app.put(
+  "/api/v1/content/:id",
+  useMiddleware,
+  async (req: CustomRequest, res: Response) => {
+    try {
+      const contentId = req.params.id;
+      const { content } = req.body;
+      const userId = req.userId;
+
+      if (!contentId || !content) {
+        res.status(400).json({
+          message: "Content ID and updated content are required",
+        });
+        return;
+      }
+      const updatedContent = await ContentModel.findOneAndUpdate(
+        {
+          _id: contentId,
+          userId: userId,
+        },
+        {
+          $set: { content },
+        },
+        {
+          new: true,
+        }
+      );
+      if (!updatedContent) {
+        res.status(404).json({
+          message:
+            "Content not found or you don't have permission to update it",
+        });
+        return;
+      }
+      res.status(200).json({
+        message: "Content updated successfully",
+        content: updatedContent,
+      });
+    } catch (err) {
+      console.error("Error updating content:", err);
+      res.status(500).json({
+        message: "Failed to update content",
+      });
+    }
+  }
+);
 
 const main = async () => {
   try {
