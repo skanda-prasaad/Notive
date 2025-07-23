@@ -1,9 +1,10 @@
-import HomePage from "./pages/Homepage"
-
+import { Outlet } from "react-router";
 const App = () => {
   return (
-    <HomePage />
-  )
-}
+    <div>
+      <Outlet />
+    </div>
+  );
+};
 
-export default App
+export default App;

@@ -14,7 +14,13 @@ const app = express();
 const PORT = process.env.PORT || 2000;
 
 // Middlewares
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.post("/api/v1/signup", async (req: Request, res: Response) => {
@@ -28,7 +34,7 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
       .regex(/[a-z]/, "Must contain at least one lowercase letter")
       .regex(/[0-9]/, "Must contain at least one number")
       .regex(/[^A-Za-z0-9]/, "Must contain at least one special character"),
-    name: z.string().min(3).max(10),
+    name: z.string().min(3).max(50),
   });
 
   const parsed = reqSchema.safeParse(req.body);

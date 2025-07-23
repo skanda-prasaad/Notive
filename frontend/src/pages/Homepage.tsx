@@ -2,7 +2,7 @@ import Hero from "../components/landing/Hero";
 import NavBar from "../components/landing/NavBar";
 import { useState } from "react";
 import DashboardPreview from "../components/landing/Preview";
-import Features from "../components/landing/features";
+import Features from "../components/landing/Features";
 import CallToAction from "../components/landing/CallToAct";
 import Footer from "../components/landing/Footer";
 
