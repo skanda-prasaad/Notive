@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function CallToAction() {
     return (
       <section
@@ -14,12 +16,12 @@ export default function CallToAction() {
           <span className="font-semibold text-purple-700 dark:text-purple-400">NeuroNest</span>.
         </p>
   
-        <a
-          href="/signup"
+        <Link
+          to="/signup"
           className="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-full shadow-md transition"
         >
           Get Started for Free →
-        </a>
+        </Link>
       </section>
     );
   }
