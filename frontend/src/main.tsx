@@ -2,11 +2,17 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import LoginPage from "./pages/LoginPage.tsx";
 import SignupPage from "./pages/SignupPage.tsx";
 import Homepage from "./pages/Homepage.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import PrivateRoute from "./components/PrivateRoute .tsx";
+import AuthenticatedLayout from "./components/AuthenticatedLayout.tsx";
 
 const router = createBrowserRouter([
   {
@@ -27,9 +33,29 @@ const router = createBrowserRouter([
       },
       {
         path: "dashboard",
-        element: <Dashboard />,
+        element: (
+          <PrivateRoute>
+            <AuthenticatedLayout>
+              <Dashboard />
+            </AuthenticatedLayout>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "content",
+        element: (
+          <PrivateRoute>
+            <AuthenticatedLayout>
+              <div className="text-white text-3xl p-8">Content Library</div>
+            </AuthenticatedLayout>
+          </PrivateRoute>
+        ),
       },
     ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/login" replace />,
   },
 ]);
 
