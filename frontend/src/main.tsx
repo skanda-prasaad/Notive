@@ -13,6 +13,7 @@ import Homepage from "./pages/Homepage.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import PrivateRoute from "./components/PrivateRoute .tsx";
 import AuthenticatedLayout from "./components/AuthenticatedLayout.tsx";
+import ContentLibrary from "./pages/ContentLibrary.tsx";
 
 const router = createBrowserRouter([
   {
@@ -46,7 +47,7 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <AuthenticatedLayout>
-              <div className="text-white text-3xl p-8">Content Library</div>
+              <ContentLibrary />
             </AuthenticatedLayout>
           </PrivateRoute>
         ),
