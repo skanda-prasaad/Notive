@@ -1,3 +1,5 @@
+import axios from "../services/axios";
+
 interface ContentItem {
   _id: string;
   title: string;
@@ -11,9 +13,13 @@ interface ContentItem {
 
 interface ContentItemProp {
   item: ContentItem;
+  onContentDelete: () => void;
 }
 
-export default function ContentCard({ item }: ContentItemProp) {
+export default function ContentCard({
+  item,
+  onContentDelete,
+}: ContentItemProp) {
   const getPlatformIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case "youtube":
@@ -52,9 +58,38 @@ export default function ContentCard({ item }: ContentItemProp) {
       alert("No link to copy");
     }
   };
-  const handleDelete = () => {
-    alert(`Delete functionality for "${item.title}" coming soon!`);
-    console.log("Delete item ID:", item._id);
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this thought?"
+    );
+    if (confirmed) {
+      try {
+        const response = await axios.delete(`api/v1/content/${item._id}`);
+        if (response.status === 200) {
+          onContentDelete();
+          alert("Thought deleted successfully!"); // Confirmation message
+        } else {
+          alert("Unexpected response from server during deletion.");
+        }
+      } catch (err: any) {
+        console.error("Error deleting content:", err);
+        if (err.response) {
+          if (err.response.status === 401) {
+            alert("Unauthorized: Please log in again.");
+          } else if (err.response.data && err.response.data.message) {
+            alert(`Deletion Failed: ${err.response.data.message}`);
+          } else {
+            alert("An unexpected server error occurred during deletion.");
+          }
+        } else if (err.request) {
+          alert(
+            "Network error: Could not reach the server. Check your connection."
+          );
+        } else {
+          alert("An unknown error occurred.");
+        }
+      }
+    }
   };
   return (
     <div className="bg-white/10 backdrop-blur-md p-5 rounded-xl shadow-lg border border-violet-700/50 flex flex-col justify-between h-56">

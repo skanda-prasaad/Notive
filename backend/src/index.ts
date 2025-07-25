@@ -113,6 +113,7 @@ interface ContentRequestBody {
   type: string;
   title: string;
   content?: string;
+  paraCategory?: string;
 }
 
 interface CustomRequest<T = any> extends Request {
@@ -124,13 +125,15 @@ app.post(
   "/api/v1/content",
   useMiddleware,
   async (req: CustomRequest<ContentRequestBody>, res: Response) => {
+
     try {
-      const { link, type, title, content } = req.body;
+      const { link, type, title, content, paraCategory } = req.body;
       const newContent = await ContentModel.create({
         link,
         type,
         title,
         content,
+        paraCategory,
         userId: req.userId,
       });
       res.status(200).json({
@@ -149,10 +152,23 @@ app.get(
   useMiddleware,
   async (req: CustomRequest, res: Response) => {
     const userId = req.userId;
+
     try {
-      const content = await ContentModel.find({
-        userId: userId,
-      }).populate("userId", "username");
+      const category = req.query.category;
+      const platform = req.query.platform;
+      const filter: any = {
+        userId: req.userId,
+      };
+      if (category) {
+        filter.paraCategory = category;
+      }
+      if (platform) {
+        filter.type = platform;
+      }
+      const content = await ContentModel.find(filter).populate(
+        "userId",
+        "username"
+      );
       if (!content) {
         res.status(404).json({ message: "No content found" });
         return;

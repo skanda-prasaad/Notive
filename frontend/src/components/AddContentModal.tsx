@@ -12,6 +12,7 @@ type AddContentForm = {
   link: string;
   content: string;
   type: string;
+  paraCategory?: string;
 };
 
 export default function AddContentModal({
@@ -24,6 +25,7 @@ export default function AddContentModal({
     link: "",
     content: "",
     type: "",
+    paraCategory: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
@@ -46,6 +48,7 @@ export default function AddContentModal({
     setError(null);
 
     try {
+      console.log("Form data before send:", form);
       const response = await axios.post("api/v1/content", form);
 
       if (response.status === 200 || response.status === 201) {
@@ -185,6 +188,26 @@ export default function AddContentModal({
               <option value="github">GitHub 🐙</option>
               <option value="instagram">Instagram 📸</option>
               <option value="note">Note 📝</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="paraCategory" className="sr-only">
+              P.A.R.A. Category
+            </label>
+            <select
+              name="paraCategory" // This name must match the schema field
+              id="paraCategory"
+              onChange={handleInput}
+              value={form.paraCategory} // Controlled component
+              className="w-full px-4 py-3 rounded-lg border bg-white/10 border-white/20 text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              // required={true} // Decide if it's required. If so, add it.
+              disabled={loading}
+            >
+              <option value="">Select P.A.R.A. Category</option>
+              <option value="projects">Projects 🚀</option>
+              <option value="areas">Areas 🌍</option>
+              <option value="resources">Resources 📦</option>
+              <option value="archives">Archives 📜</option>
             </select>
           </div>
 

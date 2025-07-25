@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+// src/pages/ContentLibrary.tsx
+
+import { useEffect, useState, useCallback } from "react"; // <-- ADD useCallback here!
 import axios from "../services/axios";
 import ContentCard from "../components/ContentCard";
 import AddContentModal from "../components/AddContentModal";
+import { useSearchParams } from "react-router-dom"; // Use react-router-dom for consistency
 
 interface ContentItem {
   _id: string;
@@ -11,6 +14,7 @@ interface ContentItem {
   content?: string;
   userId: string;
   createdAt: string;
+  paraCategory?: string;
   updatedAt: string;
 }
 
@@ -24,14 +28,33 @@ export default function ContentLibrary() {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const fetchdata = async () => {
+  // WRAP fetchdata in useCallback
+  const fetchdata = useCallback(async () => {
+    // <-- ADD useCallback here, and the arrow function syntax
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<ContentApiResponse>("api/v1/content");
+      const category = searchParams.get("category");
+      const platform = searchParams.get("platform");
+
+      const queryParams: { [key: string]: string } = {};
+      if (category) {
+        queryParams.category = category;
+      }
+      if (platform) {
+        queryParams.platform = platform;
+      }
+
+      const response = await axios.get<ContentApiResponse>("/api/v1/content", {
+        params: queryParams,
+      });
+
       if (response.data && Array.isArray(response.data.content)) {
         setContent(response.data.content);
+      } else {
+        setError("Received unexpected data format from server.");
       }
     } catch (err: any) {
       console.error("Error fetching content:", err);
@@ -55,11 +78,13 @@ export default function ContentLibrary() {
     } finally {
       setLoading(false);
     }
-  };
+    // DEPENDENCY ARRAY FOR use
+    // These are the things 'fetchdata' uses from its outside scope
+  }, [searchParams, setContent, setError, setLoading]); // <-- ADD THIS DEPENDENCY ARRAY FOR useCallback!
 
   useEffect(() => {
     fetchdata();
-  }, []);
+  }, [fetchdata]); // <-- Now, useEffect depends on 'fetchdata' (which is stable thanks to useCallback)
 
   function handleAddModal() {
     setIsAddModalOpen(true);
@@ -75,8 +100,7 @@ export default function ContentLibrary() {
           className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg transition-colors duration-200"
           onClick={handleAddModal}
         >
-          <span className="text-xl">➕</span>
-          <span>Add Content</span>
+          <span className="text-xl">➕</span> Add Content
         </button>
       </div>
 
@@ -93,7 +117,11 @@ export default function ContentLibrary() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {content.map((item) => (
-            <ContentCard key={item._id} item={item} />
+            <ContentCard
+              key={item._id}
+              item={item}
+              onContentDelete={fetchdata} // fetchdata is stable now
+            />
           ))}
         </div>
       )}
@@ -102,7 +130,7 @@ export default function ContentLibrary() {
         <AddContentModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          onContentAdd={fetchdata}
+          onContentAdd={fetchdata} // fetchdata is stable now
         />
       )}
     </div>

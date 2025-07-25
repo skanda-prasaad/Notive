@@ -44,6 +44,11 @@ const contentSchema = new Schema(
       type: String,
       required: true,
     },
+    paraCategory : {
+      type : String,
+      required : false,
+      default : 'resources'
+    }
   },
   { timestamps: true }
 );
