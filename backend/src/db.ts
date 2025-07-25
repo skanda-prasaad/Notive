@@ -2,10 +2,12 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 import dotenv from "dotenv";
 dotenv.config();
+
 mongoose
   .connect(process.env.MONGO_URL as string)
   .then(() => console.log("Connected to mongodb"))
-  .catch((err) => console.log("Connection error"));
+  .catch((err) => console.log("Connection error:", err));
+
 const userSchema = new Schema({
   email: {
     type: String,
@@ -19,49 +21,43 @@ const userSchema = new Schema({
   name: String,
 });
 
-const contentSchema = new Schema({
-  userId: {
-    ref: "User",
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
+const contentSchema = new Schema(
+  {
+    userId: {
+      ref: "User",
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
+    },
+    link: {
+      type: String,
+      required: true,
+    },
+    content: {
+      type: String,
+      default: "",
+    },
+    title: {
+      type: String,
+      required: true,
+    },
   },
-  type: {
-    type: String,
-    required: true,
-  },
-  link: {
-    type: String,
-    required: true,
-  },
-  content: {
-    type: String,
-    default: "",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
 const linkSchema = new Schema({
-  hash: String,
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User",
-    unique: true,
-  },
-});
-
-const shareLinkSchema = new Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User",
-  },
   hash: {
     type: String,
     required: true,
+    unique: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
     unique: true,
   },
   createdAt: {
@@ -73,4 +69,3 @@ const shareLinkSchema = new Schema({
 export const UserModel = mongoose.model("User", userSchema);
 export const ContentModel = mongoose.model("Content", contentSchema);
 export const LinksModel = mongoose.model("Link", linkSchema);
-export const ShareLinkModel = mongoose.model("ShareLink", shareLinkSchema);
