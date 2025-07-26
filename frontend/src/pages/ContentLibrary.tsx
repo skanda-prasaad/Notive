@@ -1,10 +1,10 @@
 // src/pages/ContentLibrary.tsx
 
-import { useEffect, useState, useCallback } from "react"; // <-- ADD useCallback here!
+import { useState, useEffect, useCallback } from "react";
 import axios from "../services/axios";
 import ContentCard from "../components/ContentCard";
 import AddContentModal from "../components/AddContentModal";
-import { useSearchParams } from "react-router-dom"; // Use react-router-dom for consistency
+import { useSearchParams, useLocation } from "react-router-dom";
 
 interface ContentItem {
   _id: string;
@@ -29,10 +29,11 @@ export default function ContentLibrary() {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation(); // Used for auto-opening modal
+  const [hasProcessedOpenModalURL, setHasProcessedOpenModalURL] =
+    useState(false);
 
-  // WRAP fetchdata in useCallback
   const fetchdata = useCallback(async () => {
-    // <-- ADD useCallback here, and the arrow function syntax
     setLoading(true);
     setError(null);
     try {
@@ -78,13 +79,22 @@ export default function ContentLibrary() {
     } finally {
       setLoading(false);
     }
-    // DEPENDENCY ARRAY FOR use
-    // These are the things 'fetchdata' uses from its outside scope
-  }, [searchParams, setContent, setError, setLoading]); // <-- ADD THIS DEPENDENCY ARRAY FOR useCallback!
+  }, [searchParams, setContent, setError, setLoading]);
 
   useEffect(() => {
     fetchdata();
-  }, [fetchdata]); // <-- Now, useEffect depends on 'fetchdata' (which is stable thanks to useCallback)
+
+    const params = new URLSearchParams(location.search);
+    const openModalParam = params.get("openAddModal");
+
+    if (openModalParam === "true" && !hasProcessedOpenModalURL) {
+      setIsAddModalOpen(true);
+      setHasProcessedOpenModalURL(true);
+
+      params.delete("openAddModal");
+      setSearchParams(params, { replace: true });
+    }
+  }, [fetchdata, location.search, setSearchParams, hasProcessedOpenModalURL]);
 
   function handleAddModal() {
     setIsAddModalOpen(true);
@@ -120,7 +130,7 @@ export default function ContentLibrary() {
             <ContentCard
               key={item._id}
               item={item}
-              onContentDelete={fetchdata} // fetchdata is stable now
+              onContentDelete={fetchdata}
             />
           ))}
         </div>
@@ -130,7 +140,7 @@ export default function ContentLibrary() {
         <AddContentModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          onContentAdd={fetchdata} // fetchdata is stable now
+          onContentAdd={fetchdata}
         />
       )}
     </div>

@@ -125,7 +125,6 @@ app.post(
   "/api/v1/content",
   useMiddleware,
   async (req: CustomRequest<ContentRequestBody>, res: Response) => {
-
     try {
       const { link, type, title, content, paraCategory } = req.body;
       const newContent = await ContentModel.create({
@@ -183,7 +182,64 @@ app.get(
     }
   }
 );
+app.get(
+  "/api/v1/dashboard/counts",
+  useMiddleware,
+  async (req: CustomRequest, res: Response) => {
+    const userId = req.userId;
+    try {
+      const totalCounts = await ContentModel.countDocuments({ userId });
+      const paraAgg = await ContentModel.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+        { $group: { _id: "$paraCategory", count: { $sum: 1 } } },
+      ]);
+      const paraCounts: Record<string, number> = {
+        projects: 0,
+        areas: 0,
+        resources: 0,
+        archives: 0,
+      };
+      paraAgg.forEach((item) => {
+        const cat = item._id?.toLowerCase();
+        if (cat && paraCounts.hasOwnProperty(cat)) {
+          paraCounts[cat] = item.count;
+        }
+      });
 
+      const platformArg = await ContentModel.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+        { $group: { _id: "$type", count: { $sum: 1 } } },
+      ]);
+
+      const platformCounts: Record<string, number> = {
+        youtube: 0,
+        github: 0,
+        instagram: 0,
+        article: 0,
+        video: 0,
+        note: 0,
+      };
+      platformArg.forEach((item) => {
+        const typeName = item._id?.toLowerCase();
+        if (typeName && platformCounts.hasOwnProperty(typeName)) {
+          platformCounts[typeName] = item.count;
+        }
+      });
+
+      res.status(200).json({
+        message: "Dashboard counts fetched succesfully",
+        counts: {
+          total: totalCounts,
+          para: paraCounts,
+          platforms: platformCounts,
+        },
+      });
+    } catch (err) {
+      console.error("Error in /dashboard/counts:", err);
+      res.status(500).json({ message: "Failed to fetch dashboard counts" });
+    }
+  }
+);
 app.delete(
   "/api/v1/content/:id",
   useMiddleware,
