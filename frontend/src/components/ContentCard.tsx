@@ -13,7 +13,7 @@ interface ContentItem {
 
 interface ContentItemProp {
   item: ContentItem;
-  onContentDelete: () => void;
+  onContentDelete?: () => void;
 }
 
 export default function ContentCard({
@@ -66,7 +66,9 @@ export default function ContentCard({
       try {
         const response = await axios.delete(`api/v1/content/${item._id}`);
         if (response.status === 200) {
-          onContentDelete();
+          if (onContentDelete) {
+            onContentDelete();
+          }
           alert("Thought deleted successfully!"); // Confirmation message
         } else {
           alert("Unexpected response from server during deletion.");

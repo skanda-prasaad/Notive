@@ -280,87 +280,84 @@ app.post(
   "/api/v1/brain/share",
   useMiddleware,
   async (req: CustomRequest, res: Response) => {
+    const userId = req.userId;
+
     try {
       const { share } = req.body;
+
       if (share) {
-        const existingLink = await LinksModel.findOne({
-          userId: req.userId,
-        });
-        if (existingLink) {
-          res.json({
-            hash: existingLink.hash,
-          });
+        const existingOrNewLink = await LinksModel.findOneAndUpdate(
+          { userId: userId },
+          { $setOnInsert: { hash: random(18), userId: userId } },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        if (!existingOrNewLink) {
+          res
+            .status(500)
+            .json({ message: "Failed to retrieve or create share link." });
           return;
         }
-        const hash = random(18);
-        await LinksModel.create({
-          userId: req.userId,
-          hash: hash,
-        });
-        res.json({
-          hash,
+
+        res.status(200).json({
+          message: "Share link retrieved or generated successfully",
+          hash: existingOrNewLink.hash,
         });
       } else {
-        const result = await LinksModel.deleteOne({
-          userId: req.userId,
-        });
+        const result = await LinksModel.deleteOne({ userId: userId });
         if (result.deletedCount === 0) {
-          res.status(404).json({
-            messgae: "No link to remove",
-          });
+          res.status(404).json({ message: "No link to remove for this user." });
           return;
         }
-        res.json({
-          message: "Removed link",
-        });
+        res.status(200).json({ message: "Share link removed successfully" });
       }
-    } catch (err) {
-      console.log(err);
-      res.status(500).json({
-        message: "Server error",
-      });
+    } catch (err: any) {
+      console.error("Error in /brain/share:", err);
+      if (err.code === 11000) {
+        res.status(409).json({
+          message: "Share link already exists for this user. Please try again.",
+        });
+      } else {
+        res
+          .status(500)
+          .json({ message: "Server error processing share request." });
+      }
     }
   }
 );
-
-app.get(
-  "/api/v1/brain/~:shareLink",
-  useMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      const hash = req.params.shareLink;
-      const shareLink = await LinksModel.findOne({ hash });
-
-      if (!shareLink) {
-        res.status(404).json({
-          message: "Share link not found",
-        });
-        return;
-      }
-      const content = await ContentModel.find({
-        userId: shareLink.userId,
-      }).sort({ createdAt: -1 });
-
-      const user = await UserModel.findById(shareLink.userId);
-      if (!user) {
-        res.status(404).json({
-          message: "User not found",
-        });
-        return;
-      }
-      res.json({
-        username: user.name || user.email,
-        content,
+app.get("/api/v1/brain/~:shareLink", async (req: Request, res: Response) => {
+  try {
+    const hash = req.params.shareLink.replace('~', '');
+    const shareLink = await LinksModel.findOne({ hash });
+    if (!shareLink) {
+      res.status(404).json({
+        message: "Share link not found",
       });
-    } catch (error) {
-      console.error("Share content error:", error);
-      res.status(500).json({
-        message: "Server error",
-        error: "Unknown error",
-      });
+      return;
     }
+    const content = await ContentModel.find({
+      userId: shareLink.userId,
+    }).sort({ createdAt: -1 });
+
+    const user = await UserModel.findById(shareLink.userId);
+    if (!user) {
+      res.status(404).json({
+        message: "User not found",
+      });
+      return;
+    }
+    res.json({
+      username: user.name || user.email,
+      content,
+    });
+  } catch (error) {
+    console.error("Share content error:", error);
+    res.status(500).json({
+      message: "Server error",
+      error: "Unknown error",
+    });
   }
-);
+});
 app.put(
   "/api/v1/content/:id",
   useMiddleware,

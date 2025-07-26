@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import PrivateRoute from "./components/PrivateRoute .tsx";
 import AuthenticatedLayout from "./components/AuthenticatedLayout.tsx";
 import ContentLibrary from "./pages/ContentLibrary.tsx";
+import PublicShareView from "./pages/PublicShareView.tsx";
 
 const router = createBrowserRouter([
   {
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
         ),
       },
     ],
+  },
+  {
+    path: "/brain/:shareLink", 
+    element: <PublicShareView />,
   },
   {
     path: "*",

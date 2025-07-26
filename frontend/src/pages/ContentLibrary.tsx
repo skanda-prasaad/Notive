@@ -5,6 +5,7 @@ import axios from "../services/axios";
 import ContentCard from "../components/ContentCard";
 import AddContentModal from "../components/AddContentModal";
 import { useSearchParams, useLocation } from "react-router-dom";
+import ShareLinkModal from "../components/ShareLinkModal";
 
 interface ContentItem {
   _id: string;
@@ -32,6 +33,7 @@ export default function ContentLibrary() {
   const location = useLocation(); // Used for auto-opening modal
   const [hasProcessedOpenModalURL, setHasProcessedOpenModalURL] =
     useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
 
   const fetchdata = useCallback(async () => {
     setLoading(true);
@@ -99,6 +101,9 @@ export default function ContentLibrary() {
   function handleAddModal() {
     setIsAddModalOpen(true);
   }
+  function handleShareModal() {
+    setIsShareModalOpen(true);
+  }
 
   return (
     <div className="space-y-6">
@@ -111,6 +116,12 @@ export default function ContentLibrary() {
           onClick={handleAddModal}
         >
           <span className="text-xl">➕</span> Add Content
+        </button>
+        <button
+          className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg transition-colors duration-200"
+          onClick={handleShareModal}
+        >
+          <span className="text-xl"></span> Share content
         </button>
       </div>
 
@@ -141,6 +152,12 @@ export default function ContentLibrary() {
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onContentAdd={fetchdata}
+        />
+      )}
+      {isShareModalOpen && (
+        <ShareLinkModal 
+        isOpen = {isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
         />
       )}
     </div>
