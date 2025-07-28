@@ -1,3 +1,4 @@
+import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 interface SidebarNavLinkProps {
@@ -6,6 +7,7 @@ interface SidebarNavLinkProps {
   label: string;
   paramName?: string;
   paramValue?: string;
+  onClick?: () => void; // ✅ Allow optional onClick
 }
 
 export default function SidebarNavLink({
@@ -14,6 +16,7 @@ export default function SidebarNavLink({
   label,
   paramName,
   paramValue,
+  onClick, // ✅ Receive onClick
 }: SidebarNavLinkProps) {
   const location = useLocation();
 
@@ -26,16 +29,20 @@ export default function SidebarNavLink({
         return location.pathname.startsWith("/content");
       }
     }
+
     if (paramName && paramValue) {
       const searchParams = new URLSearchParams(location.search);
       const currentParamValue = searchParams.get(paramName);
       return currentParamValue === paramValue;
     }
+
     return false;
   };
+
   return (
     <NavLink
       to={to}
+      onClick={onClick} // ✅ Pass onClick to NavLink
       className={() =>
         `flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200 ${
           isActiveLink()

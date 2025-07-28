@@ -30,12 +30,13 @@ export default function ContentLibrary() {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const location = useLocation(); // Used for auto-opening modal
+  const location = useLocation();
   const [hasProcessedOpenModalURL, setHasProcessedOpenModalURL] =
     useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
 
   const fetchdata = useCallback(async () => {
+    console.log("ContentLibrary: fetchdata CALLED!");
     setLoading(true);
     setError(null);
     try {
@@ -107,23 +108,29 @@ export default function ContentLibrary() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-extrabold text-white">
-          Your Content Library
-        </h1>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4"> {/* Added flex-col for small, gap-4 */}
+    <h1 className="text-4xl font-extrabold text-white text-center sm:text-left flex-grow"> {/* Centered on mobile, then left */}
+        Your Content Library
+    </h1>
+    {/* Wrap buttons to ensure they don't break layout if multiple */}
+    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto"> {/* Added flex-col for small, w-full */}
         <button
-          className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg transition-colors duration-200"
-          onClick={handleAddModal}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg transition-colors duration-200"
+            onClick={handleAddModal}
         >
-          <span className="text-xl">➕</span> Add Content
+            <span className="text-xl">➕</span> Add Content
         </button>
+        {/* Your Share Content button should also go here and match this style */}
+        
         <button
-          className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg transition-colors duration-200"
-          onClick={handleShareModal}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg transition-colors duration-200"
+            onClick={handleShareModal}
         >
-          <span className="text-xl"></span> Share content
+            <span className="text-xl">🔗</span> Share Content
         </button>
-      </div>
+        
+    </div>
+</div>
 
       {loading ? (
         <div className="text-center text-xl text-gray-300">

@@ -1,5 +1,8 @@
+// src/components/AddContentModal.tsx
+
 import React, { useState } from "react";
 import axios from "../services/axios";
+import toast from "react-hot-toast";
 
 interface AddContentModalProps {
   isOpen: boolean;
@@ -44,23 +47,32 @@ export default function AddContentModal({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     setLoading(true);
     setError(null);
 
     try {
-      console.log("Form data before send:", form);
       const response = await axios.post("api/v1/content", form);
 
       if (response.status === 200 || response.status === 201) {
         onContentAdd();
         onClose();
-        setForm({ title: "", link: "", content: "", type: "" });
+        setForm({
+          title: "",
+          link: "",
+          content: "",
+          type: "",
+          paraCategory: "",
+        });
+        toast.success("Thought added successfully!", { id: "add_success" });
       } else {
         setError(
           "Unexpected response from server. Content might not be saved."
         );
+        toast.error("Unexpected error adding thought.", { id: "add_error" });
       }
     } catch (err: any) {
+      console.error("Error submitting content:", err);
       if (err.response) {
         if (err.response.status === 400) {
           setError(
@@ -68,19 +80,30 @@ export default function AddContentModal({
               err.response.data.message || "Please check your input."
             }`
           );
+          toast.error(
+            `Validation Error: ${err.response.data.message || "Check input."}`,
+            { id: "add_error" }
+          );
         } else if (err.response.status === 401) {
           setError("Unauthorized: Please log in again.");
+          toast.error("Session expired. Please log in.", { id: "add_error" });
         } else if (err.response.data && err.response.data.message) {
           setError(`Server Error: ${err.response.data.message}`);
+          toast.error(`Server Error: ${err.response.data.message}`, {
+            id: "add_error",
+          });
         } else {
-          setError("An unexpected server error occurred. Please try again.");
+          setError("An unexpected server error occurred.");
+          toast.error("Error adding thought.", { id: "add_error" });
         }
       } else if (err.request) {
         setError(
           "Network error: Could not reach the server. Check your internet connection."
         );
+        toast.error("Network error adding thought.", { id: "add_error" });
       } else {
         setError("An unknown error occurred.");
+        toast.error("Unknown error adding thought.", { id: "add_error" });
       }
     } finally {
       setLoading(false);
@@ -190,17 +213,17 @@ export default function AddContentModal({
               <option value="note">Note 📝</option>
             </select>
           </div>
+
           <div>
             <label htmlFor="paraCategory" className="sr-only">
               P.A.R.A. Category
             </label>
             <select
-              name="paraCategory" // This name must match the schema field
+              name="paraCategory"
               id="paraCategory"
               onChange={handleInput}
-              value={form.paraCategory} // Controlled component
+              value={form.paraCategory}
               className="w-full px-4 py-3 rounded-lg border bg-white/10 border-white/20 text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              // required={true} // Decide if it's required. If so, add it.
               disabled={loading}
             >
               <option value="">Select P.A.R.A. Category</option>
@@ -216,7 +239,7 @@ export default function AddContentModal({
             className="w-full py-3 rounded-lg text-white font-semibold bg-purple-600 hover:bg-purple-700 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
-            {loading ? "Adding Thought..." : "Add Thought"}
+            {loading ? "Adding Thought..." : "Add Thought"}{" "}
           </button>
         </form>
       </div>

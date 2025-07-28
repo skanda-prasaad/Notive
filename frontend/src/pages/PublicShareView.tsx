@@ -1,7 +1,10 @@
+// src/pages/PublicShareView.tsx
+
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import axios from "../services/axios";
 import ContentCard from "../components/ContentCard";
+import toast from "react-hot-toast";
 
 interface ContentItem {
   _id: string;
@@ -30,7 +33,6 @@ export default function PublicShareView() {
   const fetchSharedContent = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const response = await axios.get<PublicShareApiResponse>(
         `/api/v1/brain/~${shareLink}`
@@ -47,15 +49,26 @@ export default function PublicShareView() {
       if (err.response) {
         if (err.response.status === 404) {
           setError("Share link not found or content is no longer shared.");
+          toast.error("Link not found/shared.", { id: "public_share_error" });
         } else if (err.response.data && err.response.data.message) {
           setError(`Server Error: ${err.response.data.message}`);
+          toast.error(`Error: ${err.response.data.message}`, {
+            id: "public_share_error",
+          });
         } else {
           setError("An unexpected server error occurred.");
+          toast.error("An unexpected error occurred.", {
+            id: "public_share_error",
+          });
         }
       } else if (err.request) {
         setError("Network error: Could not reach the server.");
+        toast.error("Network error. Check connection.", {
+          id: "public_share_error",
+        });
       } else {
         setError("An unknown error occurred.");
+        toast.error("Unknown error.", { id: "public_share_error" });
       }
     } finally {
       setLoading(false);
@@ -76,6 +89,8 @@ export default function PublicShareView() {
         <div className="text-center text-xl text-red-400">Error: {error}</div>
       ) : (
         <div className="max-w-4xl mx-auto space-y-6">
+          {" "}
+          {/* Centralized content area */}
           <h1 className="text-4xl font-extrabold text-white">
             Public Shared Brain
           </h1>
@@ -87,7 +102,6 @@ export default function PublicShareView() {
               </span>
             </p>
           )}
-
           {content.length === 0 ? (
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-xl shadow-md border border-violet-700/50 text-center text-gray-300 text-lg">
               No content available via this link.

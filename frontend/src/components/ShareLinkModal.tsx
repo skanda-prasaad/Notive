@@ -1,7 +1,8 @@
 // src/components/ShareLinkModal.tsx
 
-import { useState, useEffect } from "react";
+import{ useState, useEffect } from "react";
 import axios from "../services/axios";
+import toast from "react-hot-toast";
 
 interface ShareLinkModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export default function ShareLinkModal({
           "/api/v1/brain/share",
           { share: true }
         );
+
         if (response.data && response.data.hash) {
           setShareLink(`http://localhost:5173/brain/~${response.data.hash}`);
         } else {
@@ -39,17 +41,28 @@ export default function ShareLinkModal({
         if (err.response) {
           if (err.response.status === 401) {
             setError("Unauthorized: Please log in again.");
+            toast.error("Unauthorized: Please log in again.", {
+              id: "share_error",
+            });
           } else if (err.response.data && err.response.data.message) {
             setError(`Server Error: ${err.response.data.message}`);
+            toast.error(`Server Error: ${err.response.data.message}`, {
+              id: "share_error",
+            });
           } else {
             setError("An unexpected server error occurred.");
+            toast.error("An unexpected error occurred.", { id: "share_error" });
           }
         } else if (err.request) {
           setError(
             "Network error: Could not reach the server. Check your internet connection."
           );
+          toast.error("Network error. Check connection.", {
+            id: "share_error",
+          });
         } else {
           setError("An unknown error occurred.");
+          toast.error("Unknown error occurred.", { id: "share_error" });
         }
       } finally {
         setLoading(false);
@@ -59,59 +72,76 @@ export default function ShareLinkModal({
     if (isOpen && !shareLink) {
       generateShareLink();
     }
-  }, [isOpen, shareLink]);
+  }, [isOpen, shareLink, setShareLink, setLoading, setError]);
 
   const handleCopyLink = async () => {
     if (shareLink) {
       try {
         await navigator.clipboard.writeText(shareLink);
-        alert("Link copied to clipboard!");
+        toast.success("Link copied to clipboard!", { id: "copy_success" });
       } catch (err) {
         console.error("Failed to copy link:", err);
-        alert("Failed to copy link. Please copy manually.");
+        toast.error("Failed to copy link. Please copy manually.", {
+          id: "copy_error",
+        });
       }
     }
   };
 
   const handleStopSharing = async () => {
-    // Async for await axios.post
     const confirmed = window.confirm(
       "Are you sure you want to stop sharing your content?"
     );
     if (confirmed) {
-      setLoading(true); // Start loading when attempting to stop sharing
-      setError(null); // Clear errors
+      setLoading(true);
+      setError(null);
 
       try {
         const response = await axios.post("/api/v1/brain/share", {
           share: false,
         });
         if (response.status === 200) {
-          setShareLink(null); // Clear the shareLink state
-          alert("Sharing stopped successfully!"); // User feedback
-          onClose(); // Close the modal
+          setShareLink(null);
+          toast.success("Sharing stopped successfully!", {
+            id: "share_stopped",
+          });
+          onClose();
         } else {
-          setError("Unexpected response from server when stopping sharing."); // Fallback
+          setError("Unexpected response from server when stopping sharing.");
+          toast.error("Error stopping sharing.", { id: "share_stopped_error" });
         }
       } catch (err: any) {
         console.error("Error stopping sharing:", err);
         if (err.response) {
           if (err.response.status === 401) {
             setError("Unauthorized: Please log in again.");
+            toast.error("Unauthorized. Please log in again.", {
+              id: "share_stopped_error",
+            });
           } else if (err.response.data && err.response.data.message) {
             setError(`Server Error: ${err.response.data.message}`);
+            toast.error(`Server Error: ${err.response.data.message}`, {
+              id: "share_stopped_error",
+            });
           } else {
             setError("An unexpected server error occurred.");
+            toast.error("Unexpected error occurred.", {
+              id: "share_stopped_error",
+            });
           }
         } else if (err.request) {
           setError(
             "Network error: Could not reach the server. Check your internet connection."
           );
+          toast.error("Network error. Check connection.", {
+            id: "share_stopped_error",
+          });
         } else {
           setError("An unknown error occurred.");
+          toast.error("Unknown error occurred.", { id: "share_stopped_error" });
         }
       } finally {
-        setLoading(false); // Stop loading regardless of outcome
+        setLoading(false);
       }
     }
   };
@@ -140,14 +170,15 @@ export default function ShareLinkModal({
           Share Your Brain
         </h2>
 
-        {/* Display content based on loading/error/shareLink state */}
+        {error && (
+          <div className="bg-red-900/30 text-red-300 p-3 rounded-md mb-4 text-center">
+            {error}
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center text-xl text-gray-300 py-8">
             {shareLink ? "Stopping Sharing..." : "Generating link..."}
-          </div>
-        ) : error ? (
-          <div className="bg-red-900/30 text-red-300 p-3 rounded-md mb-4 text-center">
-            {error}
           </div>
         ) : shareLink ? (
           <div className="space-y-4">
@@ -178,10 +209,8 @@ export default function ShareLinkModal({
             </button>
           </div>
         ) : (
-          // This block runs if not loading, no error, and no shareLink (e.g., after successful stop sharing)
           <div className="text-center text-xl text-gray-300 py-8">
             No share link currently active. Click "Generate" to create one.
-            {/* You could add a button here to generate the link again if you want */}
           </div>
         )}
       </div>

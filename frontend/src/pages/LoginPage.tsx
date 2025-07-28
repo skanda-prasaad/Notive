@@ -1,6 +1,9 @@
+// src/pages/LoginPage.tsx
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../services/axios";
+import toast from "react-hot-toast";
 
 type Signin = {
   email: string;
@@ -19,11 +22,12 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(true); // Assuming you still have dark/light mode toggle
   const navigate = useNavigate();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -36,35 +40,38 @@ export default function LoginPage() {
 
       if (res.data?.token) {
         localStorage.setItem("token", res.data.token);
-        alert("Login successful!");
+        toast.success("Login successful!", { id: "login_success" });
         navigate("/dashboard");
       } else {
         setError("Login failed. No token received.");
+        toast.error("Login failed. No token received.", { id: "login_fail" });
       }
-    } catch (err: unknown) {
-      console.error("Login error:", err); // Only logs to developer console
+    } catch (err: any) {
+      console.error("Login error:", err);
 
       let message = "Something went wrong. Please try again.";
-
-      // Try to pull status if it's an Axios-like error
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err &&
-        typeof (err as any).response?.status === "number"
-      ) {
-        const status = (err as any).response.status;
-
+      if (err.response) {
+        const status = err.response.status;
         if (status === 404) {
           message = "Login service not found. Please try again later.";
+          toast.error(message, { id: "login_fail" });
         } else if (status === 401 || status === 403) {
           message = "Invalid email or password.";
+          toast.error(message, { id: "login_fail" });
         } else if (status >= 500) {
           message = "Server error. Please try again later.";
+          toast.error(message, { id: "login_fail" });
         }
+      } else if (err.request) {
+        message = "Network error: Please check your internet connection.";
+        toast.error(message, { id: "login_fail" });
+      } else {
+        message = "An unexpected error occurred.";
+        toast.error(message, { id: "login_fail" });
       }
-
       setError(message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -84,7 +91,6 @@ export default function LoginPage() {
             : "bg-white/90 border-gray-200 text-gray-900"
         }`}
       >
-        {/* Branding */}
         <div className="mb-8 text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
             <img src="/logo.png" alt="NeuroNest Logo" className="w-8 h-8" />
@@ -95,7 +101,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
             type="email"
@@ -139,7 +144,6 @@ export default function LoginPage() {
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         </form>
 
-        {/* Theme toggle + redirect */}
         <div className="mt-6 text-center text-sm space-y-2">
           <button
             onClick={() => setDark(!dark)}
