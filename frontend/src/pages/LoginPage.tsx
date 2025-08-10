@@ -1,7 +1,7 @@
 // src/pages/LoginPage.tsx
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import axios from "../services/axios";
 import toast from "react-hot-toast";
 
@@ -16,13 +16,10 @@ type LoginResponse = {
 };
 
 export default function LoginPage() {
-  const [form, setForm] = useState<Signin>({
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState<Signin>({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [dark, setDark] = useState(true); // Assuming you still have dark/light mode toggle
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -34,10 +31,8 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       const res = await axios.post<LoginResponse>("/api/v1/signin", form);
-
       if (res.data?.token) {
         localStorage.setItem("token", res.data.token);
         toast.success("Login successful!", { id: "login_success" });
@@ -47,28 +42,17 @@ export default function LoginPage() {
         toast.error("Login failed. No token received.", { id: "login_fail" });
       }
     } catch (err: any) {
-      console.error("Login error:", err);
-
       let message = "Something went wrong. Please try again.";
       if (err.response) {
-        const status = err.response.status;
-        if (status === 404) {
-          message = "Login service not found. Please try again later.";
-          toast.error(message, { id: "login_fail" });
-        } else if (status === 401 || status === 403) {
+        if (err.response.status === 401 || err.response.status === 403) {
           message = "Invalid email or password.";
-          toast.error(message, { id: "login_fail" });
-        } else if (status >= 500) {
+        } else if (err.response.status >= 500) {
           message = "Server error. Please try again later.";
-          toast.error(message, { id: "login_fail" });
         }
       } else if (err.request) {
-        message = "Network error: Please check your internet connection.";
-        toast.error(message, { id: "login_fail" });
-      } else {
-        message = "An unexpected error occurred.";
-        toast.error(message, { id: "login_fail" });
+        message = "Network error. Please check your internet connection.";
       }
+      toast.error(message, { id: "login_fail" });
       setError(message);
     } finally {
       setLoading(false);
@@ -76,28 +60,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className={`min-h-screen flex items-center justify-center px-4 transition-colors duration-500 ${
-        dark
-          ? "bg-gradient-to-br from-gray-950 via-purple-900 to-gray-900"
-          : "bg-gradient-to-br from-white via-purple-100 to-gray-100"
-      }`}
-    >
-      <div
-        className={`w-full max-w-md p-8 rounded-2xl shadow-xl border backdrop-blur-md transition-all duration-300
-        ${
-          dark
-            ? "bg-white/5 border-white/10 text-white"
-            : "bg-white/90 border-gray-200 text-gray-900"
-        }`}
-      >
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-gray-950 via-purple-900 to-gray-900 text-white">
+      <div className="w-full max-w-md p-8 rounded-2xl shadow-xl border backdrop-blur-md bg-white/5 border-white/10">
         <div className="mb-8 text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
-            <img src="/logo.png" alt="NeuroNest Logo" className="w-8 h-8" />
-            <h1 className="text-2xl font-bold tracking-tight">NeuroNest</h1>
+            <img src="/logo.png" alt="Notive Logo" className="w-8 h-8 filter invert" />
+            <h1 className="text-2xl font-bold tracking-tight">Notive</h1>
           </div>
-          <p className={`text-sm ${dark ? "text-gray-300" : "text-gray-600"}`}>
-            Welcome back — let's unlock your second brain.
+          <p className="text-sm text-gray-300">
+            Welcome back — your personal knowledge hub.
           </p>
         </div>
 
@@ -109,29 +80,27 @@ export default function LoginPage() {
             onChange={handleChange}
             value={form.email}
             required
-            className={`w-full px-4 py-3 rounded-lg border transition
-              ${
-                dark
-                  ? "bg-white/10 border-white/20 text-white placeholder-gray-400"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-              }
-              focus:outline-none focus:ring-2 focus:ring-purple-500`}
+            className="w-full px-4 py-3 rounded-lg border bg-white/10 border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            onChange={handleChange}
-            value={form.password}
-            required
-            className={`w-full px-4 py-3 rounded-lg border transition
-              ${
-                dark
-                  ? "bg-white/10 border-white/20 text-white placeholder-gray-400"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-              }
-              focus:outline-none focus:ring-2 focus:ring-purple-500`}
-          />
+
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              onChange={handleChange}
+              value={form.password}
+              required
+              className="w-full px-4 py-3 pr-12 rounded-lg border bg-white/10 border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white transition"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
 
           <button
             type="submit"
@@ -144,25 +113,12 @@ export default function LoginPage() {
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         </form>
 
-        <div className="mt-6 text-center text-sm space-y-2">
-          <button
-            onClick={() => setDark(!dark)}
-            className={`underline hover:text-purple-500 transition ${
-              dark ? "text-gray-400" : "text-gray-700"
-            }`}
-          >
-            Switch to {dark ? "Light" : "Dark"} Mode
-          </button>
-          <p className={`${dark ? "text-gray-400" : "text-gray-600"}`}>
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-purple-500 hover:underline font-medium"
-            >
-              Sign up
-            </Link>
-          </p>
-        </div>
+        <p className="mt-6 text-center text-sm text-gray-400">
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-purple-500 hover:underline font-medium">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );

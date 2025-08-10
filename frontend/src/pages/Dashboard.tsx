@@ -263,7 +263,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-6">
       <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-1 sm:mb-2">
-        Welcome back to your <span className="text-purple-400">NeuroNest</span>!
+        Welcome back to your <span className="text-purple-400">Notive</span>!
       </h1>
       <p className="text-base sm:text-lg text-gray-300">
         Your knowledge hub is ready to expand.

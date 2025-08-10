@@ -1,4 +1,4 @@
-// src/components/ContentCard.tsx
+// src/components/ContentCard.tsx - FINAL FIXED
 
 import React from "react";
 import axios from "../services/axios";
@@ -18,7 +18,17 @@ import {
   FaLink,
   FaRegClipboard,
   FaTrashAlt,
+  FaDribbble,
+  FaFigma,
+  FaGoogle,
+  FaLinkedin,
+  FaMedium,
+  FaSpotify,
+  FaStackOverflow,
+  FaTwitter,
+  FaCode,
 } from "react-icons/fa";
+import { IoIosJournal } from "react-icons/io";
 
 interface ContentItem {
   _id: string;
@@ -63,6 +73,30 @@ export default function ContentCard({
         return <FaBox className="text-yellow-400" />;
       case "archives":
         return <FaArchive className="text-gray-400" />;
+      case "dribbble":
+        return <FaDribbble className="text-pink-600" />;
+      case "figma":
+        return <FaFigma className="text-red-400" />;
+      case "google_docs":
+        return <FaGoogle className="text-blue-500" />;
+      case "linkedin":
+        return <FaLinkedin className="text-blue-600" />;
+      case "medium":
+        return <FaMedium className="text-green-500" />;
+      case "spotify":
+        return <FaSpotify className="text-green-400" />;
+      case "stackoverflow":
+        return <FaStackOverflow className="text-orange-500" />;
+      case "twitter":
+        return <FaTwitter className="text-blue-400" />;
+      case "codepen":
+        return <FaCode className="text-gray-300" />;
+      case "excalidraw":
+        return <IoIosJournal className="text-purple-300" />;
+      case "miro":
+        return <IoIosJournal className="text-blue-300" />;
+      case "notion":
+        return <IoIosJournal className="text-gray-300" />;
       default:
         return <FaLink className="text-gray-400" />;
     }
@@ -121,13 +155,13 @@ export default function ContentCard({
                   toast.error("Failed to delete content.");
                 }
               }}
-              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-red-600 hover:text-red-500"
+              className="w-full border border-transparent rounded-none p-4 flex items-center justify-center text-sm font-medium text-red-600 hover:text-red-500"
             >
               Confirm
             </button>
             <button
               onClick={() => toast.dismiss(t.id)}
-              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-gray-400 hover:text-gray-300"
+              className="w-full border border-transparent rounded-none p-4 flex items-center justify-center text-sm font-medium text-gray-400 hover:text-gray-300"
             >
               Cancel
             </button>
@@ -148,48 +182,50 @@ export default function ContentCard({
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-md px-6 py-5 rounded-xl shadow-lg border border-violet-700/50 flex flex-col justify-between min-h-[14rem]">
+    <div className="bg-white/5 backdrop-blur-md p-6 rounded-xl shadow-xl border border-white/10 flex flex-col justify-between h-full transition-all duration-300 hover:bg-white/10 hover:border-purple-500">
       <div>
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-3xl">{getIconComponent(item.type)}</span>
-          <h3 className="text-xl font-semibold text-white truncate w-full">
+        <div className="flex items-center gap-4 mb-4">
+          <span className="text-3xl flex-shrink-0">
+            {getIconComponent(item.type)}
+          </span>
+          <h3 className="text-xl font-semibold text-white line-clamp-2">
             {item.title || "Untitled Thought"}
           </h3>
         </div>
-        <p className="text-gray-300 text-base line-clamp-3 mb-4">
+        <p className="text-gray-300 text-base line-clamp-3 mb-6">
           {item.content || "No detailed notes available."}
         </p>
       </div>
 
-      <div className="flex justify-between items-center pt-4 border-t border-violet-700/30">
-        <div className="flex flex-col flex-grow min-w-0 mr-2">
-          <a
-            href={item.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-400 hover:text-purple-300 text-sm whitespace-nowrap overflow-hidden text-ellipsis"
-          >
-            {item.link
-              ? new URL(item.link).hostname.replace("www.", "")
-              : "No Link"}
-          </a>
+      <div className="flex justify-between items-end pt-4 border-t border-white/10">
+        <div className="flex flex-col min-w-0 mr-4">
+          {item.link && (
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-purple-400 hover:text-purple-300 text-sm whitespace-nowrap overflow-hidden text-ellipsis mb-1"
+            >
+              {new URL(item.link).hostname.replace("www.", "")}
+            </a>
+          )}
           {item.createdAt && (
-            <p className="text-gray-400 text-xs mt-1">
+            <p className="text-gray-400 text-xs">
               Added on {formatDate(item.createdAt)}
             </p>
           )}
         </div>
-        <div className="flex flex-shrink-0 gap-1">
+        <div className="flex flex-shrink-0 gap-2">
           <button
             onClick={handleCopyLink}
-            className="p-2.5 rounded-full hover:bg-violet-800 transition-colors duration-200 text-gray-300"
+            className="p-2 rounded-full hover:bg-violet-800 transition-colors duration-200 text-gray-300"
             title="Copy Link"
           >
             <FaRegClipboard className="h-5 w-5" />
           </button>
           <button
             onClick={handleDelete}
-            className="p-2.5 rounded-full hover:bg-red-800 transition-colors duration-200 text-gray-300"
+            className="p-2 rounded-full hover:bg-red-800 transition-colors duration-200 text-gray-300"
             title="Delete"
           >
             <FaTrashAlt className="h-5 w-5" />
