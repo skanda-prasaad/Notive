@@ -1,4 +1,30 @@
-# .gitignore
-dist/
-node_modules/
+# dependencies
+/node_modules
+
+# build outputs
+/dist
+/build
+
+# logs
+*.log
+npm-debug.log*
+
+# environment variables
 .env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# local development server
+.history
+
+# SASS cache
+.sass-cache
+
+# miscellaneous
+.DS_Store
+*.seed
+*.log
+*.sqlite3
+/coverage
