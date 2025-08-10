@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col items-center space-y-4 text-center">
         <p className="text-sm">
           © {new Date().getFullYear()}{" "}
-          <span className="text-white font-semibold">NeuroNest</span>. All rights reserved.
+          <span className="text-white font-semibold">Notive</span>. All rights reserved.
           Built with <span className="text-red-500">❤️</span> by{" "}
           <span className="text-white font-semibold">Skanda</span>.
         </p>

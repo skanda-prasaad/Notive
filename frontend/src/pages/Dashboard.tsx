@@ -1,5 +1,3 @@
-// src/pages/Dashboard.tsx
-
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "../services/axios";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +35,7 @@ import {
   FaTwitter,
   FaCode,
   FaBookOpen,
+  FaDropbox,
 } from "react-icons/fa";
 import { IoIosJournal } from "react-icons/io";
 
@@ -69,28 +68,8 @@ export default function Dashboard() {
   const [dashboardCounts, setDashboardCounts] = useState<DashboardCounts>({
     total: 0,
     para: { projects: 0, areas: 0, resources: 0, archives: 0 },
-    platforms: {
-      youtube: 0,
-      github: 0,
-      instagram: 0,
-      article: 0,
-      video: 0,
-      note: 0,
-      dribbble: 0,
-      figma: 0,
-      google_docs: 0,
-      linkedin: 0,
-      medium: 0,
-      spotify: 0,
-      stackoverflow: 0,
-      twitter: 0,
-      codepen: 0,
-      excalidraw: 0,
-      miro: 0,
-      notion: 0,
-    },
+    platforms: {},
   });
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -120,8 +99,34 @@ export default function Dashboard() {
       excalidraw: <FaBars className="text-purple-300" />,
       miro: <FaBars className="text-blue-300" />,
       notion: <IoIosJournal className="text-gray-300" />,
+      dropbox: <FaDropbox className="text-blue-400" />,
     };
     return icons[type.toLowerCase()] || <FaLink className="text-gray-400" />;
+  };
+
+  const normalizeKey = (rawKey: string) =>
+    rawKey
+      .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+      .replace(/[\s-]+/g, "_")
+      .toLowerCase();
+
+  const normalizeValueToNumber = (val: any) => {
+    if (typeof val === "number" && Number.isFinite(val)) return val;
+    if (typeof val === "string") {
+      const parsed = Number(val);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    if (val && typeof val === "object") {
+      if ("count" in val) {
+        const parsed = Number((val as any).count);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+      if ("total" in val) {
+        const parsed = Number((val as any).total);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+    }
+    return 0;
   };
 
   const fetchDashboardCounts = useCallback(async () => {
@@ -132,7 +137,18 @@ export default function Dashboard() {
         "/api/v1/dashboard/counts"
       );
       if (response.data?.counts) {
-        setDashboardCounts(response.data.counts);
+        const apiCounts = response.data.counts;
+        const apiPlatforms = apiCounts.platforms || {};
+        const normalizedPlatforms: { [key: string]: number } = {};
+        Object.entries(apiPlatforms).forEach(([k, v]) => {
+          const nk = normalizeKey(k);
+          normalizedPlatforms[nk] = normalizeValueToNumber(v);
+        });
+        setDashboardCounts((prev) => ({
+          ...prev,
+          ...apiCounts,
+          platforms: { ...(prev.platforms || {}), ...normalizedPlatforms },
+        }));
       } else {
         setError("Unexpected server response format.");
       }
@@ -173,10 +189,11 @@ export default function Dashboard() {
     [dashboardCounts.platforms]
   );
 
+  const prettyLabel = (key: string) =>
+    key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
   const platformChartData = {
-    labels: filteredPlatforms.map(
-      ([key]) => key.charAt(0).toUpperCase() + key.slice(1)
-    ),
+    labels: filteredPlatforms.map(([key]) => prettyLabel(key)),
     datasets: [
       {
         label: "Content Count",
@@ -268,7 +285,6 @@ export default function Dashboard() {
       <p className="text-base sm:text-lg text-gray-300">
         Your knowledge hub is ready to expand.
       </p>
-
       {loading ? (
         <div className="text-center text-lg sm:text-xl text-gray-300 py-12">
           Loading your brain's summary...
@@ -279,7 +295,6 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Total Content */}
           <div className="bg-white/10 backdrop-blur-md p-5 sm:p-6 rounded-xl shadow-md border border-violet-700/50 flex flex-col items-start max-w-full sm:max-w-xs">
             <span className="text-3xl sm:text-4xl mb-2 sm:mb-3">
               {getIconComponent("dashboard_total")}
@@ -291,8 +306,6 @@ export default function Dashboard() {
               {dashboardCounts.total}
             </p>
           </div>
-
-          {/* Platforms Chart */}
           <div className="bg-white/10 backdrop-blur-md p-4 sm:p-6 rounded-xl shadow-md border border-violet-700/50">
             {filteredPlatforms.length > 0 ? (
               <div className="w-full h-[300px] sm:h-[350px]">
@@ -304,8 +317,6 @@ export default function Dashboard() {
               </p>
             )}
           </div>
-
-          {/* PARA Summary */}
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               Your Brain's Structure (P.A.R.A.)
@@ -329,8 +340,6 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-
-          {/* Quick Actions */}
           <div className="bg-white/10 backdrop-blur-md p-5 sm:p-8 rounded-xl shadow-md border border-violet-700/50">
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               Quick Actions

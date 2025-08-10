@@ -22,13 +22,14 @@ import {
   FaTwitter,
   FaCode,
   FaBars,
-  FaDropbox, // Added FaDropbox import
+  FaDropbox,
+  FaChevronDown, // Added for the dropdown arrow
 } from "react-icons/fa";
 import { IoIosJournal } from "react-icons/io";
 
 const contentTypes = {
   youtube: { label: "YouTube", icon: <FaYoutube className="text-red-500" /> },
-  github: { label: "GitHub", icon: <FaGithub className="text-gray-300" /> }, // Changed from text-white to text-gray-300 for visibility
+  github: { label: "GitHub", icon: <FaGithub className="text-gray-300" /> },
   instagram: {
     label: "Instagram",
     icon: <FaInstagram className="text-pink-500" />,
@@ -66,7 +67,7 @@ const contentTypes = {
   },
   miro: { label: "Miro", icon: <FaBars className="text-blue-300" /> },
   notion: { label: "Notion", icon: <IoIosJournal className="text-gray-300" /> },
-  dropbox: { label: "Dropbox", icon: <FaDropbox className="text-blue-400" /> }, // Added Dropbox
+  dropbox: { label: "Dropbox", icon: <FaDropbox className="text-blue-400" /> },
 };
 
 const paraCategories = {
@@ -117,10 +118,12 @@ export default function AddContentModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
+  // dropdown open states
+  const [isTypeOpen, setIsTypeOpen] = useState(false);
+  const [isParaOpen, setIsParaOpen] = useState(false);
+
   function handleInput(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value } = e.target;
     setForm((prevForm) => ({ ...prevForm, [name]: value }));
@@ -212,35 +215,83 @@ export default function AddContentModal({
             className="w-full px-4 py-3 rounded-lg border bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
             disabled={loading}
           />
-          <select
-            name="type"
-            onChange={handleInput}
-            value={form.type}
-            className="w-full px-4 py-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 max-h-48 overflow-y-auto"
-            required
-            disabled={loading}
-          >
-            <option value="">Select Content Type</option>
-            {Object.entries(contentTypes).map(([key, { label }]) => (
-              <option key={key} value={key} className="bg-gray-800 text-white">
-                {label}
-              </option>
-            ))}
-          </select>
-          <select
-            name="paraCategory"
-            onChange={handleInput}
-            value={form.paraCategory}
-            className="w-full px-4 py-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 max-h-48 overflow-y-auto"
-            disabled={loading}
-          >
-            <option value="">Select P.A.R.A. Category</option>
-            {Object.entries(paraCategories).map(([key, { label }]) => (
-              <option key={key} value={key} className="bg-gray-800 text-white">
-                {label}
-              </option>
-            ))}
-          </select>
+
+          {/* Custom Dropdown for Content Type */}
+          <div className="relative">
+            <div
+              onClick={() => setIsTypeOpen(!isTypeOpen)}
+              className="w-full px-4 py-3 rounded-lg border bg-gray-800 border-gray-700 text-white cursor-pointer flex justify-between items-center"
+            >
+              <span className="truncate">
+                {form.type
+                  ? contentTypes[form.type as keyof typeof contentTypes]?.label
+                  : "Select Content Type"}
+              </span>
+              <FaChevronDown
+                className={`w-5 h-5 text-gray-400 transform transition-transform ${
+                  isTypeOpen ? "rotate-180" : "rotate-0"
+                }`}
+              />
+            </div>
+            {isTypeOpen && (
+              <ul className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg max-h-48 overflow-y-auto shadow-lg">
+                {Object.entries(contentTypes).map(([key, { label, icon }]) => (
+                  <li
+                    key={key}
+                    onClick={() => {
+                      setForm((prev) => ({ ...prev, type: key }));
+                      setIsTypeOpen(false);
+                    }}
+                    className="px-4 py-3 hover:bg-gray-700 cursor-pointer flex items-center space-x-3 text-white"
+                  >
+                    <span className="w-5 h-5 flex-shrink-0">{icon}</span>
+                    <span className="flex-grow truncate">{label}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Custom Dropdown for PARA Category */}
+          <div className="relative">
+            <div
+              onClick={() => setIsParaOpen(!isParaOpen)}
+              className="w-full px-4 py-3 rounded-lg border bg-gray-800 border-gray-700 text-white cursor-pointer flex justify-between items-center"
+            >
+              <span className="truncate">
+                {form.paraCategory
+                  ? paraCategories[
+                      form.paraCategory as keyof typeof paraCategories
+                    ]?.label
+                  : "Select P.A.R.A. Category"}
+              </span>
+              <FaChevronDown
+                className={`w-5 h-5 text-gray-400 transform transition-transform ${
+                  isParaOpen ? "rotate-180" : "rotate-0"
+                }`}
+              />
+            </div>
+            {isParaOpen && (
+              <ul className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg max-h-48 overflow-y-auto shadow-lg">
+                {Object.entries(paraCategories).map(
+                  ([key, { label, icon }]) => (
+                    <li
+                      key={key}
+                      onClick={() => {
+                        setForm((prev) => ({ ...prev, paraCategory: key }));
+                        setIsParaOpen(false);
+                      }}
+                      className="px-4 py-3 hover:bg-gray-700 cursor-pointer flex items-center space-x-3 text-white"
+                    >
+                      <span className="w-5 h-5 flex-shrink-0">{icon}</span>
+                      <span className="flex-grow truncate">{label}</span>
+                    </li>
+                  )
+                )}
+              </ul>
+            )}
+          </div>
+
           <button
             type="submit"
             className="w-full py-3 rounded-lg text-white font-semibold bg-purple-600 hover:bg-purple-700 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"

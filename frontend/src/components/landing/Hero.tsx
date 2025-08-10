@@ -39,7 +39,7 @@ export default function Hero({ dark = true }: HeroProps) {
           }`}
         >
           Capture every idea, link & insight. Structure your knowledge effortlessly
-          and recall instantly with <span className="font-semibold">NeuroNest</span>.
+          and recall instantly with <span className="font-semibold">Notive</span>.
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">

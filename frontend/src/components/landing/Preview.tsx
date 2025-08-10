@@ -1,5 +1,5 @@
 // src/components/landing/Preview.tsx - FINAL FIXED
-
+import dashboard from "../../assets/dashboard.png"
 export default function DashboardPreview() {
   return (
     <section id="preview" className="py-20 px-4 md:px-6 flex justify-center text-white">
@@ -11,7 +11,7 @@ export default function DashboardPreview() {
 
         <div className="overflow-hidden rounded-2xl shadow-2xl border border-white/10 mt-12">
           <img
-            src="/images/dashboard-preview.png"
+            src={dashboard}
             alt="Notive Dashboard preview"
             className="w-full object-cover"
           />

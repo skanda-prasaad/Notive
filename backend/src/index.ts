@@ -211,17 +211,11 @@ app.get(
         { $group: { _id: "$type", count: { $sum: 1 } } },
       ]);
 
-      const platformCounts: Record<string, number> = {
-        youtube: 0,
-        github: 0,
-        instagram: 0,
-        article: 0,
-        video: 0,
-        note: 0,
-      };
+      // FIX: Dynamically build the platformCounts object
+      const platformCounts: Record<string, number> = {};
       platformArg.forEach((item) => {
         const typeName = item._id?.toLowerCase();
-        if (typeName && platformCounts.hasOwnProperty(typeName)) {
+        if (typeName) {
           platformCounts[typeName] = item.count;
         }
       });
@@ -327,7 +321,7 @@ app.post(
 );
 app.get("/api/v1/brain/~:shareLink", async (req: Request, res: Response) => {
   try {
-    const hash = req.params.shareLink.replace('~', '');
+    const hash = req.params.shareLink.replace("~", "");
     const shareLink = await LinksModel.findOne({ hash });
     if (!shareLink) {
       res.status(404).json({

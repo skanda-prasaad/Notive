@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "../services/axios";
 import toast from "react-hot-toast";
+import Notivelogo from "../assets/logo.png"
 
 type Signin = {
   email: string;
@@ -64,7 +65,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md p-8 rounded-2xl shadow-xl border backdrop-blur-md bg-white/5 border-white/10">
         <div className="mb-8 text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
-            <img src="/logo.png" alt="Notive Logo" className="w-8 h-8 filter invert" />
+            <img src={Notivelogo} alt="Notive Logo" className="w-12 rounded-2xl h-12" />
             <h1 className="text-2xl font-bold tracking-tight">Notive</h1>
           </div>
           <p className="text-sm text-gray-300">
