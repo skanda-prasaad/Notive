@@ -1,6 +1,6 @@
 // src/components/ShareLinkModal.tsx
 
-import{ useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "../services/axios";
 import toast from "react-hot-toast";
 
@@ -32,7 +32,9 @@ export default function ShareLinkModal({
         );
 
         if (response.data && response.data.hash) {
-          setShareLink(`http://localhost:5173/brain/~${response.data.hash}`);
+          setShareLink(
+            `${import.meta.env.VITE_FRONTEND_URL}/brain/~${response.data.hash}`
+          );
         } else {
           setError("Failed to generate link: Hash not received from server.");
         }
