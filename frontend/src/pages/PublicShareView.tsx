@@ -29,6 +29,7 @@ export default function PublicShareView() {
   const [sharerName, setSharerName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchSharedContent = useCallback(async () => {
     setLoading(true);
@@ -79,6 +80,15 @@ export default function PublicShareView() {
     fetchSharedContent();
   }, [fetchSharedContent]);
 
+  const filteredContent = content.filter(
+    (item) =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.content &&
+        item.content.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.paraCategory &&
+        item.paraCategory.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-gray-900 to-indigo-950 text-gray-100 p-8">
       {loading ? (
@@ -89,8 +99,6 @@ export default function PublicShareView() {
         <div className="text-center text-xl text-red-400">Error: {error}</div>
       ) : (
         <div className="max-w-4xl mx-auto space-y-6">
-          {" "}
-          {/* Centralized content area */}
           <h1 className="text-4xl font-extrabold text-white">
             Public Shared Brain
           </h1>
@@ -102,13 +110,23 @@ export default function PublicShareView() {
               </span>
             </p>
           )}
-          {content.length === 0 ? (
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Search shared content..."
+              className="w-full px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {filteredContent.length === 0 ? (
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-xl shadow-md border border-violet-700/50 text-center text-gray-300 text-lg">
-              No content available via this link.
+              No content found.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
-              {content.map((item) => (
+              {filteredContent.map((item) => (
                 <ContentCard key={item._id} item={item} />
               ))}
             </div>
