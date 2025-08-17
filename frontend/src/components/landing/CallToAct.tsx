@@ -1,4 +1,4 @@
-// src/components/landing/CallToAct.tsx - FINAL FIXED
+
 
 import { Link } from "react-router-dom";
 

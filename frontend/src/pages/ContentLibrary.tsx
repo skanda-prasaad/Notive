@@ -1,4 +1,4 @@
-// src/pages/ContentLibrary.tsx
+
 
 import { useState, useEffect, useCallback } from "react";
 import axios from "../services/axios";
@@ -108,19 +108,19 @@ export default function ContentLibrary() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4"> {/* Added flex-col for small, gap-4 */}
-    <h1 className="text-4xl font-extrabold text-white text-center sm:text-left flex-grow"> {/* Centered on mobile, then left */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4"> 
+    <h1 className="text-4xl font-extrabold text-white text-center sm:text-left flex-grow"> 
         Your Content Library
     </h1>
-    {/* Wrap buttons to ensure they don't break layout if multiple */}
-    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto"> {/* Added flex-col for small, w-full */}
+
+    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto"> 
         <button
             className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg transition-colors duration-200"
             onClick={handleAddModal}
         >
             <span className="text-xl">➕</span> Add Content
         </button>
-        {/* Your Share Content button should also go here and match this style */}
+
         
         <button
             className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg transition-colors duration-200"

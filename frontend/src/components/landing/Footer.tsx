@@ -1,4 +1,4 @@
-// src/components/landing/Footer.tsx - FINAL FIXED
+
 
 export default function Footer() {
   return (

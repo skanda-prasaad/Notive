@@ -1,4 +1,4 @@
-// src/pages/Homepage.tsx - FINAL FIXED
+
 
 import Hero from "../components/landing/Hero";
 import NavBar from "../components/landing/NavBar";

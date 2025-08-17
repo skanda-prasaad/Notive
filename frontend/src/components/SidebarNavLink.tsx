@@ -7,7 +7,7 @@ interface SidebarNavLinkProps {
   label: string;
   paramName?: string;
   paramValue?: string;
-  onClick?: () => void; // ✅ Allow optional onClick
+  onClick?: () => void; 
 }
 
 export default function SidebarNavLink({
@@ -16,7 +16,7 @@ export default function SidebarNavLink({
   label,
   paramName,
   paramValue,
-  onClick, // ✅ Receive onClick
+  onClick,
 }: SidebarNavLinkProps) {
   const location = useLocation();
 
@@ -42,7 +42,7 @@ export default function SidebarNavLink({
   return (
     <NavLink
       to={to}
-      onClick={onClick} // ✅ Pass onClick to NavLink
+      onClick={onClick}
       className={() =>
         `flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200 ${
           isActiveLink()

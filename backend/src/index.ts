@@ -17,13 +17,13 @@ const PORT = process.env.PORT || 2000;
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", 
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
   })
 );
 app.use(express.json());
 
-app.post("/api/v1/signup", async (req: Request, res: Response) => {
+app.post("/api/v1/signup", async (req, res) => {
   const reqSchema = z.object({
     email: z.string().email().min(3).max(100),
     password: z
@@ -41,8 +41,8 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
 
   if (!parsed.success) {
     res
-      .status(411)
-      .json({ message: "Invalid input", error: parsed.error.errors });
+      .status(400)
+      .json({ message: "Invalid input", errors: parsed.error.errors }); 
     return;
   }
 
@@ -65,7 +65,6 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
 app.post("/api/v1/signin", async (req: Request, res: Response) => {
   const { email, password } = req.body;
 

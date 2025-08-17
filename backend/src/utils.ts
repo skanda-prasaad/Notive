@@ -4,7 +4,6 @@ export function random(len: number) {
   let ans = "";
 
   for (let i = 0; i < len; i++) {
-    // 70% chance of picking a digit
     if (Math.random() < 0.6) {
       ans += numberPool[Math.floor(Math.random() * numberPool.length)];
     } else {

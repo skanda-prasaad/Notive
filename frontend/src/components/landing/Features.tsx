@@ -1,4 +1,4 @@
-// src/components/landing/Features.tsx - FINAL FIXED
+
 
 import FeatureCard from "./FeatureCard";
 import { Brain, Layers, Clock, Share2, Shield, Search } from "lucide-react";

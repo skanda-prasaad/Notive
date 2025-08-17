@@ -1,4 +1,4 @@
-// src/components/landing/Preview.tsx - FINAL FIXED
+
 import dashboard from "../../assets/dashboard.png"
 export default function DashboardPreview() {
   return (

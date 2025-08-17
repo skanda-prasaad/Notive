@@ -4,7 +4,7 @@ import SidebarNavLink from "./SidebarNavLink";
 import toast from "react-hot-toast";
 import NotiveLogo from "../assets/logo.png";
 
-// Icons
+
 import {
   FaYoutube,
   FaGithub,

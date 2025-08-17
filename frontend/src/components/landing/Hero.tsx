@@ -7,7 +7,7 @@ interface HeroProps {
 export default function Hero({ dark = true }: HeroProps) {
   return (
     <section className="min-h-[80vh] flex items-center justify-center px-6 py-20 transition-colors duration-300 relative overflow-hidden">
-      {/* Subtle animated gradient background blur */}
+
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
       <div className="absolute top-20 -right-40 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-[pulse_6s_infinite]" />
 

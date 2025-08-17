@@ -23,7 +23,7 @@ import {
   FaCode,
   FaBars,
   FaDropbox,
-  FaChevronDown, // Added for the dropdown arrow
+  FaChevronDown, 
 } from "react-icons/fa";
 import { IoIosJournal } from "react-icons/io";
 
@@ -216,7 +216,7 @@ export default function AddContentModal({
             disabled={loading}
           />
 
-          {/* Custom Dropdown for Content Type */}
+
           <div className="relative">
             <div
               onClick={() => setIsTypeOpen(!isTypeOpen)}
@@ -252,7 +252,7 @@ export default function AddContentModal({
             )}
           </div>
 
-          {/* Custom Dropdown for PARA Category */}
+  
           <div className="relative">
             <div
               onClick={() => setIsParaOpen(!isParaOpen)}
