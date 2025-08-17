@@ -32,17 +32,5 @@ Notive is a modern web application designed to help you capture, organize, and s
 - 🍃 **MongoDB + Mongoose** — Flexible NoSQL database  
 - 🔑 **JWT Authentication** — Secure user sessions  
 
----
 
-## 📦 Installation
 
-### Prerequisites
-- Node.js (v16 or higher)  
-- MongoDB  
-- Git  
-
-### Backend Setup
-```bash
-git clone https://github.com/skanda-prasaad/notive.git
-cd notive/backend
-npm install
