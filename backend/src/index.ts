@@ -22,7 +22,6 @@ app.use(
   })
 );
 app.use(express.json());
-
 app.post("/api/v1/signup", async (req, res) => {
   const reqSchema = z.object({
     email: z.string().email().min(3).max(100),
